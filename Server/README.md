@@ -26,21 +26,21 @@ git clone https://github.com/buttplugio/buttplug
 cd buttplug/buttplug-device-config
 npm i
 npm run build:v3
-mkdir -p $TARGET_DIR
+sudo mkdir -p $TARGET_DIR
 cp <config>.json $TARGET_DIR/
 ```
 
 
 ###### Setup systemd-service
 ```
-root #   cp ./system/systemd/intiface-engine.service /etc/systemd/system/
-root #   systemctl daemon-reload
+root      #   cp ./system/systemd/intiface-engine.service /etc/systemd/system/
+root      #   systemctl daemon-reload
+root      #   systemctl --enable --now intiface-engine.service
 ```
 
 ###### Start Intiface manually
 ```
-$USERNAME #   sudo mkdir -p /usr/local/intiface-engine
-$USERNAME #   cd /usr/local/intiface-engine
+$USERNAME #   cd /home/$USERNAME/intiface-engine
 $USERNAME #   ./intiface-engine --websocket-port 12334 --use-lovense-dongle-hid --websocket-use-all-interfaces --log debug --use-device-websocket-server --device-websocket-server-port 12344 --device-config-file buttplug-device-config-v3.json
 ```
 
