@@ -64,7 +64,7 @@
 ##### Requirements
  - NodeJS
 ```
-sudo apt-get install -y nodejs npm
+~$ sudo apt-get install -y nodejs npm
 ```
 
 ###### Generate device-config .json
@@ -91,7 +91,7 @@ cp ~/src/buttplug/buttplug/buttplug-device-config/build-config/buttplug-device-c
 ## Troubleshooting 
 ###### Start Intiface manually
 ```
-root@server:~$ su -l intiface
+root@server:~$     su -l intiface
 intiface@server:~$ cd ~/intiface-engine
 intiface@server:~$ ./intiface-engine --websocket-port 12334 --use-lovense-dongle-hid --websocket-use-all-interfaces --log debug --use-device-websocket-server --device-websocket-server-port 12344 --device-config-file buttplug-device-config-v3.json
 ```
