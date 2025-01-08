@@ -1,18 +1,51 @@
 # Server
 
 #### Compile & Install Intiface-Engine
-##### Download Rust
+
+
+##### -> as root
+###### Install dependencies via apt-get
 ```
-export USERNAME=local_user
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-mkdir -p /home/$USERNAME/intiface-engine
-cd /usr/src
-git clone https://github.com/intiface/intiface-engine
-sudo cp -R /usr/src/intiface-engine/target/release/* /home/$USERNAME/intiface-engine/
+~$ apt install libdbus-1-dev pkg-config libudev-dev -y
+```
+###### Create user
+```
+~$ useradd -m -s /bin/bash intiface
+~$ usermod -a -G sudo intiface
+```
+###### Login as user
+```
+~$ su -l intiface
 ```
 
-##### Getting Buttplug for generating a Device-Config
-###### Requirements
+##### -> as $USERNAME
+```
+~$ export USERNAME=intiface
+```
+###### Download & Setup cargo (Rust)
+```
+~$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+~$ . "$HOME/.cargo/env"
+```
+
+###### Get intiface-engine source from github
+```
+~$ mkdir $HOME/src
+~$ cd $HOME/src
+~/src$ git clone https://github.com/intiface/intiface-engine
+~/src$ cd intiface-engine
+```
+
+###### build intiface-engine release
+```
+~/src/intiface-engine$ cargo build --release
+~/src/intiface-engine$ cp -R ./target/release/* $HOME/intiface-engine/
+```
+
+###### Getting buttplug source for generating a Device-Config
+
+
+##### Requirements
  - NodeJS
 ```
 sudo apt-get install -y nodejs npm
@@ -20,14 +53,15 @@ sudo apt-get install -y nodejs npm
 
 ###### Generate device-config .json
 ```
-export TARGET_DIR=/home/$USERNAME/intiface-engine
-cd /usr/src
-git clone https://github.com/buttplugio/buttplug
-cd buttplug/buttplug-device-config
-npm i
-npm run build:v3
-sudo mkdir -p $TARGET_DIR
-cp <config>.json $TARGET_DIR/
+~$ export TARGET_DIR=~/intiface-engine
+~$ cd ~/src
+~/src$ git clone https://github.com/buttplugio/buttplug
+~/src$ cd buttplug 
+~/src/buttplug$ cd buttplug/buttplug-device-config
+~/src/buttplug/buttplug/buttplug-device-config$ npm i
+~/src/buttplug/buttplug/buttplug-device-config$ npm audit fix --force
+~/src/buttplug/buttplug/buttplug-device-config$ npm run build:v3
+cp ~/src/buttplug/buttplug/buttplug-device-config/build-config/buttplug-device-config-v3.json $TARGET_DIR/
 ```
 
 

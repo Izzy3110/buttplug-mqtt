@@ -1,0 +1,15 @@
+[Unit]
+Description=Intiface Engine
+After=network.target
+
+[Service]
+WorkingDirectory=/home/intiface/intiface-engine
+User=intiface
+ExecStart=/home/intiface/intiface-engine/intiface-engine --websocket-port 12345 --use-lovense-dongle-hid --websocket-use-all-interfaces --log debug --device-config-file buttplug-device-config-v3.json
+Restart=on-failure
+RestartPreventExitStatus=255
+
+
+[Install]
+WantedBy=multi-user.target
+Alias=intiface.service
