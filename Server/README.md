@@ -23,6 +23,15 @@
 ~$ export USERNAME=intiface
 ```
 
+## &raquo; Hardware
+##### Lovense USB-Dongle
+#### - udev rules
+```
+~$ sudo cp ./system/udev/50-localusb.rules /etc/udev/rules.d/
+~$ sudo udevadm control --reload-rules && sudo udevadm trigger
+~$ sudo usermod -aG plugdev $USERNAME
+```
+
 ###### Download this repository
 ```
 ~$ git clone https://github.com/Izzy3110/buttplug-mqtt
