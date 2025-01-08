@@ -18,10 +18,17 @@
 ~$ su -l intiface
 ```
 
-##### -> as $USERNAME
+##### -> as User (intiface)
 ```
 ~$ export USERNAME=intiface
 ```
+
+###### Download this repository
+```
+~$ git clone https://github.com/Izzy3110/buttplug-mqtt
+```
+
+
 ###### Download & Setup cargo (Rust)
 ```
 ~$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -64,17 +71,18 @@ sudo apt-get install -y nodejs npm
 cp ~/src/buttplug/buttplug/buttplug-device-config/build-config/buttplug-device-config-v3.json $TARGET_DIR/
 ```
 
-
+##### -> as root
 ###### Setup systemd-service
 ```
-root      #   cp ./system/systemd/intiface-engine.service /etc/systemd/system/
-root      #   systemctl daemon-reload
-root      #   systemctl --enable --now intiface-engine.service
+~$ cp /home/intiface/buttplug-mqtt/Server/system/systemd/intiface_engine.service /etc/systemd/system
+~$ systemctl daemon-reload
+~$ systemctl --enable --now intiface-engine.service
 ```
 
+## Troubleshooting 
 ###### Start Intiface manually
 ```
-$USERNAME #   cd /home/$USERNAME/intiface-engine
-$USERNAME #   ./intiface-engine --websocket-port 12334 --use-lovense-dongle-hid --websocket-use-all-interfaces --log debug --use-device-websocket-server --device-websocket-server-port 12344 --device-config-file buttplug-device-config-v3.json
+root@server:~$ su -l intiface
+intiface@server:~$ cd ~/intiface-engine
+intiface@server:~$ ./intiface-engine --websocket-port 12334 --use-lovense-dongle-hid --websocket-use-all-interfaces --log debug --use-device-websocket-server --device-websocket-server-port 12344 --device-config-file buttplug-device-config-v3.json
 ```
-
