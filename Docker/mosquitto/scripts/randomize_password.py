@@ -80,5 +80,4 @@ if __name__ == '__main__':
                 dst=os.path.join(os.getcwd(), ".last_password.temp"))
             str_to_file(GENERATED_PASSWORD)
     else:
-        str_to_file(GENERATED_PASSWORD)
-
+        str_to_file(GENERATED_PASSWORD, filename="passwd.clr")

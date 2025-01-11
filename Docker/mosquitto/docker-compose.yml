@@ -1,0 +1,16 @@
+services:
+    mosquitto:
+        restart: unless-stopped
+        container_name: mosquitto
+        build:
+            context: .
+            dockerfile: Dockerfile
+
+        volumes:
+            - ./config:/etc/mosquitto
+            - ./conf.d:/etc/mosquitto/conf.d
+            - ./logs:/var/log/mosquitto
+            - ./scripts:/etc/mosquitto/scripts
+        ports:
+            - 1883:1883
+            - 1884:1884
