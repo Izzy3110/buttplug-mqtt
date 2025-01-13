@@ -1,12 +1,12 @@
-# Buttplug MQTT Bridge
+# Buttplug MQTT Bridge (UNIX)
 
 ### Components 
  - Docker   MQTT-Broker (mosquitto)
  - Server   Intiface-Engine
  - App      MQTT-Bridge
 
-### Installation
- - Install docker and docker-compose
+### Installation (UNIX)
+ - Install docker.io and docker-compose
  - Start mosquitto
  - Start Server-Backend
  - Start MQTT-Bridge
