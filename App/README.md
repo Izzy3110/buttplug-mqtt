@@ -11,6 +11,12 @@ Debian GNU/Linux (bookworm)
 6.1.0-27-amd64
 ```
 ## &raquo; Installation steps
+
+#### Install Python Virtual Environment (as root)
+```
+~$ apt install python-is-python3 python3-venv -y
+```
+
 #### Setup virtual environment
 ```
 python -m venv venv
