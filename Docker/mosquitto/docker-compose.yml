@@ -11,6 +11,7 @@ services:
             - ./conf.d:/etc/mosquitto/conf.d
             - ./logs:/var/log/mosquitto
             - ./scripts:/etc/mosquitto/scripts
+            # - ./config/pwfile:/etc/mosquitto/pwfile:ro
         ports:
             - 1883:1883
             - 1884:1884
