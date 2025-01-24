@@ -1,0 +1,30 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint:static": "eslint static/**/*.js",
+    "lint:templates": "eslint templates/**/*.html",
+    "lint:all": "npm run lint:static && npm run lint:templates",
+    "format:check:static": "prettier --check '.\\static\\**\\*.{js,css,html}'",
+    "format:check:templates": "prettier --check '.\\templates\\*.{js,css,html}'",
+    "format:check:all": "npm run format:check:static && npm run format:check:templates",
+    "format:fix:static": "prettier --write 'static/**/*.{js,css,html}'",
+    "format:fix:templates": "prettier --write 'templates/*.{js,css,html}'",
+    "format:fix:all": "npm run format:fix:static && npm run format:fix:templates"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "eslint-plugin-html": "^8.1.2",
+    "globals": "^15.14.0"
+  },
+  "dependencies": {
+    "prettier": "^3.4.2"
+  }
+}

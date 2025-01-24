@@ -1,0 +1,152 @@
+#box {
+  width: 100%;
+  height: 100vh;
+  border: 3px solid black;
+  position: relative;
+}
+
+.point {
+  width: 20px;
+  height: 20px;
+  background-color: lightgray;
+  border: 2px solid black;
+  border-radius: 50%;
+  position: absolute;
+  cursor: grab;
+}
+
+.point:active {
+  cursor: grabbing;
+}
+
+.transparent-button {
+  background-color: transparent; /* Transparent background */
+  border: 2px solid #000; /* Add border to make the button visible */
+  color: #000; /* Text color */
+  font-size: 16px; /* Font size */
+  padding: 2px 15px; /* Padding to make the button look nice */
+  position: absolute; /* Absolute positioning */
+  left: 2vw; /* Margin from the left */
+  bottom: 2vh; /* Margin from the bottom */
+  min-width: 20vw;
+  cursor: pointer; /* Change cursor to pointer on hover */
+  transition:
+    background-color 0.3s,
+    color 0.3s; /* Smooth transition for background and text color on hover */
+}
+
+.transparent-button:hover {
+  background-color: rgba(0, 0, 0, 0.1); /* Light background on hover */
+  color: #fff; /* Text color on hover */
+}
+.transparent-button-bottom-12vh {
+  position: absolute;
+  bottom: 12vh; /* Margin from the left */
+  left: 2vw; /* Margin from the left */
+}
+.transparent-button-bottom-22vh {
+  position: absolute;
+  bottom: 22vh; /* Margin from the left */
+  left: 2vw; /* Margin from the left */
+}
+.transparent-button-bottom-32vh {
+  position: absolute;
+  bottom: 32vh; /* Margin from the left */
+  left: 2vw; /* Margin from the left */
+}
+.transparent-button-bottom-42vh {
+  position: absolute;
+  bottom: 42vh; /* Margin from the left */
+  left: 2vw; /* Margin from the left */
+}
+.transparent-button-bottom-52vh {
+  position: absolute;
+  bottom: 52vh; /* Margin from the left */
+  left: 2vw; /* Margin from the left */
+}
+
+/* Container for the buttons */
+.button-container {
+  position: fixed; /* Fix the container to the screen */
+  bottom: 2vh; /* 2vh from the bottom */
+  left: 2vw; /* 2vw from the left */
+  display: flex; /* Use flexbox */
+  flex-direction: column; /* Stack buttons vertically */
+  gap: 1vh; /* Add space between the buttons */
+}
+
+/* Style for buttons */
+.button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #d2e4ff85;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #d7e4f9b5;
+}
+
+#realtime-chart {
+  position: fixed; /* Fix the chart to the background */
+  top: 0; /* Align it to the top */
+  left: 0; /* Align it to the left */
+  width: 100vw; /* Make the chart take up the full viewport width */
+  height: 100vh; /* Make the chart take up the full viewport height */
+  background-color: black; /* Black background */
+  z-index: -1; /* Send the chart behind all other content */
+  margin: 0;
+  padding: 0;
+  border: none;
+  overflow: hidden; /* Hide overflow */
+}
+
+.flot-base,
+.flot-overlay,
+.flot-hits {
+  border: none !important; /* Remove borders from all Flot elements */
+}
+
+.flot-x-axis,
+.flot-y-axis {
+  display: none; /* Hide axis labels */
+}
+
+.chart-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.chart {
+  display: flex;
+  transition: transform 0.5s ease-out;
+}
+
+.data-point {
+  width: 20px;
+  height: 40px; /* Example height, can be dynamic */
+  background-color: #00a0ff;
+  margin-right: 5px;
+  transition: all 0.5s ease-out;
+  opacity: 0.8;
+}
+.chart-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  height: 100px;
+}
+
+.line-chart {
+  width: 100%;
+  height: 100%;
+}
+
+.line {
+  transition: stroke-dasharray 1s ease-out;
+}

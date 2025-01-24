@@ -1,0 +1,34 @@
+{% from 'bootstrap5/nav.html' import render_nav_item %} {% from
+'bootstrap5/utils.html' import render_messages %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>{% block title %}Control Panel{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+    {{ bootstrap.load_css() }}
+
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+      }
+    </style>
+    {% block scripts_head %}{% endblock %}
+  </head>
+  <body>
+    <main class="container-fluid p-0">
+      {{ render_messages(container=False, dismissible=True,
+      dismiss_animate=True) }} {% block content %}{% endblock %}
+    </main>
+    {{ bootstrap.load_js() }}
+  </body>
+</html>

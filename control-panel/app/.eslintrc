@@ -1,0 +1,16 @@
+{
+    "plugins": ["html"],
+    "env": {
+        "browser": true,
+        "node": true,
+        "es2021": true
+      },
+    "rules": {
+        "no-unused-vars": "off",
+        "no-undef": "off",
+        "no-console": "off",
+        "indent": ["error", 2],
+        "quotes": ["error", "double"],
+        "semi": ["error", "always"]
+      }
+  }

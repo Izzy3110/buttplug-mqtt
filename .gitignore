@@ -170,3 +170,4 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 pat.txt
+control-panel/app/node_modules/
