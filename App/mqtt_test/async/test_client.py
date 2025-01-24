@@ -30,5 +30,5 @@ async def subscribe_async(client):
 
 if __name__ == "__main__":
     # asyncio.run(publish_async(strength=.06))
-    asyncio.run(publish_async(duration=1, strength=.7))
+    asyncio.run(publish_async(duration=.1, strength=.7))
     # asyncio.run(publish_async(duration=3, strength=.01))
