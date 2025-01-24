@@ -12,13 +12,13 @@ from wyl import logger
 
 load_dotenv('.env')
 
-MQTT_HOST = os.getenv('MQTT_BROKER', "5.230.42.8")
+MQTT_HOST = os.getenv('MQTT_BROKER', "127.0.0.1")
 MQTT_USER = os.getenv('MQTT_USER', "")
 MQTT_PASS = os.getenv('MQTT_PASSWORD', "")
 MQTT_TOPIC = os.getenv('MQTT_TOPIC', "plug/hush")
 
 INTIFACE_ENGINE_CLIENT_NAME = os.getenv('INTIFACE_ENGINE_CLIENT_NAME', "Python-App")
-INTIFACE_ENGINE_WS_URL = os.getenv('INTIFACE_ENGINE_WS_URL', "ws://localhost:15345")
+INTIFACE_ENGINE_WS_URL = os.getenv('INTIFACE_ENGINE_WS_URL', "ws://localhost:12345")
 
 client = buttplug.client.Client(INTIFACE_ENGINE_CLIENT_NAME)
 connector = buttplug.connectors.WebsocketConnector(INTIFACE_ENGINE_WS_URL)
