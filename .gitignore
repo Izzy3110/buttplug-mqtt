@@ -171,3 +171,5 @@ cython_debug/
 .pypirc
 pat.txt
 control-panel/app/node_modules/
+App/control_panel/app/node_modules/.bin/js-yaml
+App/control_panel/app/node_modules/

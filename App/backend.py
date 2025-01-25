@@ -1,14 +1,19 @@
 import asyncio
 import json
 import os
+import threading
 import buttplug
 import sys
 from asyncio import Queue
 from aiomqtt import Client
 from dotenv import load_dotenv
-from wyl.buttplug import client_setup, vibrate
+from flask_socketio import emit, Namespace
+
+from wyl.buttplug import client_setup, vibrate, vibrate_set
 from wyl.mqtt import subscribe_async
 from wyl import logger
+
+from control_panel.control_panel import app, socketio
 
 load_dotenv('.env')
 
@@ -55,14 +60,25 @@ async def process_q(q: asyncio.Queue):
                         while q.qsize() > 0:
                             item = await q.get()
 
-                            json_ = json.loads(item)
+                            json_: dict = json.loads(item)
+                            # print("JSON")
+                            # print(json_)
                             duration = float(json_.get('duration'))
                             strength = float(json_.get('strength'))
-
-                            await vibrate(
-                                buttplug_client=buttplug_client,
-                                duration=duration, strength=strength
-                            )
+                            if json_.get('duration') != "-1":
+                                print("default")
+                                # print(json_)
+                                await vibrate(
+                                    buttplug_client=buttplug_client,
+                                    duration=duration, strength=strength
+                                )
+                            else:
+                                print("SET")
+                                print(json_)
+                                await vibrate_set(
+                                    buttplug_client=buttplug_client,
+                                    strength=strength
+                                )
                     else:
                         logger.debug(f"{q.qsize()} items in q")
 
@@ -132,6 +148,48 @@ async def main():
             logger.debug("Shutting down...")
 
 
+async def publish_async_set(strength=.3,  topic=MQTT_TOPIC):
+    print(f"mqtt-strength: {strength}")
+    async with Client(MQTT_HOST, username=MQTT_USER, password=MQTT_PASS) as client:
+        await client.publish(topic, payload=json.dumps({"cmd": "set", "strength": strength}).encode(), qos=2)
+
+
+class MyCustomNamespace(Namespace):
+    last_data = None
+
+    def on_connect(self):
+        pass
+
+    def on_disconnect(self, reason):
+        pass
+
+    def on_mouse_move_point(self, data):
+        self.last_data = data
+        print(data)
+        print(data.get('y%'))
+        emit('mouse_coordinates', data, broadcast=True)
+        self.process_last_data()
+
+    def on_mouse_create_point(self, data):
+        self.last_data = data
+        print(data.get('y%'))
+        emit('mouse_coordinates', data, broadcast=True)
+        self.process_last_data()
+
+    def process_last_data(self):
+        print("processing...")
+        loop = asyncio.new_event_loop()
+        from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy
+        set_event_loop_policy(WindowsSelectorEventLoopPolicy())
+        loop.run_until_complete(publish_async_set(strength=(self.last_data.get('y%') / 100)))
+
+
+
+def run_flask():
+    socketio.on_namespace(MyCustomNamespace('/'))
+    socketio.run(app, port=5005, allow_unsafe_werkzeug=True)
+
+
 if __name__ == "__main__":
     config = {
         "program": "Buttplug MQTT Bridge",
@@ -142,5 +200,9 @@ if __name__ == "__main__":
     logger.debug(f"Version: {config.get('version')}")
     logger.debug(f"Debug: {'On' if async_debug else 'Off'}")
     logger.debug("")
+
+    # Start the Flask app in a separate thread
+    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread.start()
 
     asyncio.run(main(), debug=async_debug)

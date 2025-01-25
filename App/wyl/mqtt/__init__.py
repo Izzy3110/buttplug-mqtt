@@ -23,10 +23,34 @@ async def subscribe_async(mqtt_client, mqtt_topic=None, queue=None, debug=True):
         if debug:
             print(f"Received: {message.payload.decode()}")
         try:
-            json_ = json.loads(message.payload.decode('utf-8'))
-            duration = float(json_.get('duration'))
+            json_: dict = json.loads(message.payload.decode('utf-8'))
+            is_set_cmd = False
+            is_axis_cmd = False
+
+            duration = .1
+
+            if "cmd" in json_.keys():
+                is_set_cmd = True
+                if json_.get('cmd') == "axis":
+                    is_axis_cmd = True
+            else:
+                try:
+                    duration = float(json_.get('duration'))
+                except TypeError:
+                    is_set_cmd = True
+                    pass
             strength = float(json_.get('strength'))
-            await queue.put(json.dumps({"duration": duration, "strength": strength, "t": time.time()}))
+            if not is_axis_cmd:
+                print("OK" if is_set_cmd else "NOT A SET-CMD")
+                if not is_set_cmd:
+                    await queue.put(json.dumps({"duration": duration, "strength": strength, "t": time.time()}))
+                else:
+                    print(strength)
+                    await queue.put(json.dumps({"duration": "-1", "strength": strength, "t": time.time()}))
+            else:
+                print("axis cmd")
+                strength /= 1000
+                await queue.put(json.dumps({"duration": "-1", "strength": strength, "t": time.time()}))
         except json.decoder.JSONDecodeError as de:
             print(de)
             print(f"m: {message.payload.decode('utf-8')}")
