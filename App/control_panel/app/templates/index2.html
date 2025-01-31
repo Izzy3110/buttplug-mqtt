@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Flot Chart</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.time.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+    <!--
+    <script src="{{ url_for('static', filename='js/jquery.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.canvaswrapper.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.colorhelpers.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flot/jquery.flot.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flot/jquery.flot.saturated.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flot/jquery.flot.browser.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flot/jquery.flot.drawSeries.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flot/jquery.flot.uiConstants.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flot/jquery.flot.canvas.js') }}"></script>
+    -->
+    <style>
+        #placeholder {
+            width: 600px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div id="placeholder"></div>
+    <script>
+        const socket = io();
+        // Handle incoming messages
+socket.onconnect= function (event) {
+    console.log(event);
+};
+socket.onmessage= function (event) {
+    console.log(event);
+};
+        $(function () {
+            // Array to hold the data points
+            let data = [];
+            const totalPoints = 100;
+
+
+
+            // Function to add a new point
+            function addPoint(value) {
+                if (data.length >= totalPoints) {
+                    data = data.slice(1); // Remove the oldest point
+                }
+                const x = data.length > 0 ? data[data.length - 1][0] + 1 : 0; // Increment x-value
+                data.push([x, value]); // Add the new point
+                updateChart();
+            }
+
+            // Function to update the chart
+            function updateChart() {
+                plot.setData([data]);
+                plot.setupGrid();
+                plot.draw();
+            }
+
+            // Initial plot setup
+            const options = {
+                series: {
+                    shadowSize: 0, // No shadow for performance
+                    lines: {
+                        show: true,
+                        fill: true, // Fill under the line
+                        fillColor: 'rgba(150, 202, 250, 0.4)'
+                    }
+                },
+                yaxis: {
+                    min: 0,
+                    max: 100 // Fixed range
+                },
+                xaxis: {
+                    show: true // Show x-axis for clarity
+                }
+            };
+
+            const plot = $.plot("#placeholder", [data], options);
+
+            // WebSocket error handling
+            socket.onerror = function (error) {
+                console.error("WebSocket Error:", error);
+            };
+
+            socket.onclose = function () {
+                console.warn("WebSocket connection closed.");
+            };
+        });
+    </script>
+</body>
+</html>

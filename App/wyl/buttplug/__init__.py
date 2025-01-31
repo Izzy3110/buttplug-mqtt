@@ -82,7 +82,7 @@ async def vibrate(buttplug_client, duration, strength=0.2, disconnect=False):
             end_ = datetime.now()
             # print(start_.strftime("%d.%m.%Y %H:%M:%S"))
             # print(end_.strftime("%d.%m.%Y %H:%M:%S"))
-            print(end_ - start_)
+            # print(end_ - start_)
             # print("done")
         if no_devices:
             await buttplug_client.stop_scanning()

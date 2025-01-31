@@ -2,20 +2,37 @@ import asyncio
 import json
 import os
 import threading
+import aiomqtt.exceptions
 import buttplug
 import sys
 from asyncio import Queue
+import pygame
 from aiomqtt import Client
 from dotenv import load_dotenv
 from flask_socketio import emit, Namespace
 
+from wyl.monitors import monitor_controller
 from wyl.buttplug import client_setup, vibrate, vibrate_set
-from wyl.mqtt import subscribe_async
+from wyl.mqtt import subscribe_async, publish_async_set
 from wyl import logger
 
 from control_panel.control_panel import app, socketio
 
 load_dotenv('.env')
+
+# Initialize pygame
+pygame.init()
+pygame.joystick.init()
+
+# Check for connected joysticks
+joystick_count = pygame.joystick.get_count()
+if joystick_count == 0:
+    print("No joystick connected!")
+    exit()
+else:
+    joystick = pygame.joystick.Joystick(0)
+    joystick.init()
+    print(f"Connected to: {joystick.get_name()}")
 
 MQTT_HOST = os.getenv('MQTT_BROKER', "127.0.0.1")
 MQTT_USER = os.getenv('MQTT_USER', "")
@@ -39,6 +56,9 @@ q_processing = False
 buttplug_client = None
 async_debug = True
 silenced = True
+mqtt_connected = False
+current_axis_value = 0
+inverted_set = True
 
 
 async def process_q(q: asyncio.Queue):
@@ -75,6 +95,7 @@ async def process_q(q: asyncio.Queue):
                             else:
                                 print("SET")
                                 print(json_)
+
                                 await vibrate_set(
                                     buttplug_client=buttplug_client,
                                     strength=strength
@@ -105,10 +126,13 @@ async def process_q(q: asyncio.Queue):
                 try:
                     buttplug_client = await client_setup(buttplug_client=client, connector=connector)
                 except Exception as e:
-                    print(str(e))
+                    print(type(e))
 
     finally:
         q_processing = False
+
+
+q_can_process = True
 
 
 async def monitor_queue():
@@ -118,40 +142,49 @@ async def monitor_queue():
     Continuously checks if there are items in the queue and ensures the processing
     function `process_q` is initiated if not already running.
     """
-    global q_processing
-    while True:
-        if not q_processing and not queue.empty():
-            asyncio.create_task(process_q(queue))
-        await asyncio.sleep(0.1)  # Adjust polling interval as needed
+    global q_processing, q_can_process
+    try:
+        while q_can_process:
+            if not q_processing and not queue.empty():
+                asyncio.create_task(process_q(queue))
+            await asyncio.sleep(0.1)  # Adjust polling interval as needed
+    except asyncio.CancelledError:
+        q_can_process = False
 
 
 async def main():
+    global mqtt_connected, q_can_process
     """
     Initializes the MQTT client, starts the subscription and queue monitoring
     tasks, and manages application shutdown.
     """
 
-    async with Client(MQTT_HOST, username=MQTT_USER, password=MQTT_PASS) as mqtt_client:
-        logger.debug("starting tasks...")
-        logger.debug("  subscribe_async")
-        logger.debug("  monitor_queue")
-        logger.debug("")
-
-        tasks = [
-            asyncio.create_task(subscribe_async(mqtt_client, mqtt_topic=MQTT_TOPIC, queue=queue)),
-            asyncio.create_task(monitor_queue())
-        ]
-
+    while not mqtt_connected:
         try:
-            await asyncio.gather(*tasks)
-        except asyncio.CancelledError:
-            logger.debug("Shutting down...")
+            async with Client(MQTT_HOST, username=MQTT_USER, password=MQTT_PASS) as mqtt_client:
+                logger.debug("starting tasks...")
+                logger.debug("  subscribe_async")
+                logger.debug("  monitor_queue")
+                logger.debug("")
 
-
-async def publish_async_set(strength=.3,  topic=MQTT_TOPIC):
-    print(f"mqtt-strength: {strength}")
-    async with Client(MQTT_HOST, username=MQTT_USER, password=MQTT_PASS) as client:
-        await client.publish(topic, payload=json.dumps({"cmd": "set", "strength": strength}).encode(), qos=2)
+                tasks = [
+                    asyncio.create_task(subscribe_async(mqtt_client, mqtt_topic=MQTT_TOPIC, queue=queue)),
+                    asyncio.create_task(monitor_queue()),
+                    asyncio.create_task(monitor_controller(joystick=joystick))
+                ]
+                mqtt_connected = True
+                try:
+                    await asyncio.gather(*tasks)
+                except asyncio.CancelledError:
+                    logger.debug("Shutting down...")
+                    mqtt_connected = False
+                    q_can_process = False
+                    await asyncio.sleep(5)
+        except aiomqtt.exceptions.MqttError as mqtt_error:
+            mqtt_error_str = mqtt_error.args[0]
+            logger.error(f"MQTT-Error: {mqtt_error_str}")
+            mqtt_connected = False
+            await asyncio.sleep(5)
 
 
 class MyCustomNamespace(Namespace):
@@ -160,21 +193,43 @@ class MyCustomNamespace(Namespace):
     def on_connect(self):
         pass
 
+    def on_system(self, data):
+        if data.get("reconnected"):
+            print("has reconnected")
+
     def on_disconnect(self, reason):
         pass
 
     def on_mouse_move_point(self, data):
-        self.last_data = data
-        print(data)
-        print(data.get('y%'))
-        emit('mouse_coordinates', data, broadcast=True)
-        self.process_last_data()
+        if self.should_process_data(data):
+            self.last_data = data
+            print(data)
+            print(data.get('y%'))
+            emit('mouse_coordinates', data, broadcast=True)
+            self.process_last_data()
+
+    def on_external_set(self, data):
+        emit("my_set_event", data.get('value'), broadcast=True)
 
     def on_mouse_create_point(self, data):
-        self.last_data = data
-        print(data.get('y%'))
-        emit('mouse_coordinates', data, broadcast=True)
-        self.process_last_data()
+        if self.should_process_data(data):
+            self.last_data: dict = data
+
+            print(self.last_data.get('y%'))
+            emit('mouse_coordinates', data, broadcast=True)
+            self.process_last_data()
+
+    def should_process_data(self, data):
+        """
+        Function to filter out unwanted values.
+        Assumption: The incorrect value (e.g., 0.83) always comes before the real one.
+        """
+        y_value = data.get('y%')
+        print(f"should_process_data: {y_value}")
+        # If y_value is None or invalid, return False
+        if y_value is None:
+            return False
+        return True
 
     def process_last_data(self):
         print("processing...")
@@ -182,7 +237,6 @@ class MyCustomNamespace(Namespace):
         from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy
         set_event_loop_policy(WindowsSelectorEventLoopPolicy())
         loop.run_until_complete(publish_async_set(strength=(self.last_data.get('y%') / 100)))
-
 
 
 def run_flask():

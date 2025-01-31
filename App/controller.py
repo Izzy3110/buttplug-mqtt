@@ -78,6 +78,7 @@ async def decrease_current_axis_value(value):
     await publish_async_set(strength_axis=current_axis_value)
 
 current_axis_value = 0
+inverted_set = True
 
 
 async def monitor_controller(poll_interval=0.05):
@@ -100,13 +101,34 @@ async def monitor_controller(poll_interval=0.05):
             axis_value = joystick.get_axis(3)
             # Invert the value as per your original code
             inverted_value = -1 * axis_value
+            if inverted_set:
 
-            if inverted_value > 0.15:
-                await increase_current_axis_value(inverted_value)
-                print(f"Increasing: {current_axis_value:.2f}")
-            elif inverted_value < -0.15:
-                await decrease_current_axis_value(inverted_value)
-                print(f"Decreasing: {current_axis_value:.2f}")
+                if inverted_value > 0.15:
+                    print(inverted_value)
+                    await increase_current_axis_value(inverted_value)
+                    print(f"Increasing: {current_axis_value:.2f}")
+
+                elif inverted_value < -0.35:
+                    print(inverted_value)
+                    await decrease_current_axis_value(inverted_value)
+                    print(f"Decreasing: {current_axis_value:.2f}")
+
+
+                """
+                if inverted_value > 0.15:
+                    await decrease_current_axis_value(inverted_value)
+                    print(f"Decreasing: {current_axis_value:.2f}")
+                elif inverted_value < -0.15:
+                    await increase_current_axis_value(inverted_value)
+                    print(f"Increasing: {current_axis_value:.2f}")
+                """
+            else:
+                if inverted_value > 0.15:
+                    await increase_current_axis_value(inverted_value)
+                    print(f"Increasing: {current_axis_value:.2f}")
+                elif inverted_value < -0.15:
+                    await decrease_current_axis_value(inverted_value)
+                    print(f"Decreasing: {current_axis_value:.2f}")
 
             if 3 not in previous_axis or abs(inverted_value - previous_axis[3]) > 0.01:  # Significant change
                 # print(f"Axis {3} changed: {inverted_value:.2f}")

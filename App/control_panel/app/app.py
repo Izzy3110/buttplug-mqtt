@@ -6,7 +6,9 @@ load_dotenv('../.env')
 
 
 def create_app():
+    print("creating app")
     app = Flask(__name__)
+    app.has_reconnected = False
     # set default button style and size, will be overwritten by macro parameters
     app.config['BOOTSTRAP_BTN_STYLE'] = 'primary'
     app.config['BOOTSTRAP_BTN_SIZE'] = 'sm'

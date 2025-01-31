@@ -76,3 +76,5 @@ $(document).ready(function () {
 
   // Add event listeners for window actions
   window.addEventListener("resize", redrawPoint);
+  // Start WebSocket connection
+connectWebSocket();

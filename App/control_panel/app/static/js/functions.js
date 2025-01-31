@@ -81,7 +81,44 @@ function getValueLocal() {
     isDragging = false;
     document.removeEventListener("mousemove", movePointOnMouseMove); // Remove global mousemove listener
   };
-  
+
+  const createPointAtValue = (y_value) => {
+    const rect = box.getBoundingClientRect();
+    const mouseY = y_value - rect.top; // Get mouse Y position relative to the box
+
+    if (!point) {
+      // If point doesn't exist, create it at the calculated position
+      point = document.createElement("div");
+      point.classList.add("point");
+      point.style.left = `${rect.width / 2 - 10}px`; // Center horizontally
+      point.style.top = `${mouseY - 10}px`; // Position at mouse Y
+      box.appendChild(point);
+
+      // Make the point draggable immediately after creation
+      makePointDraggable(point);
+
+      // Store the Y percentage relative to the box height
+      pointYPercent = (mouseY / rect.height) * 100;
+    } else {
+      // If point exists, move it to the new Y position
+      point.style.top = `${mouseY - 10}px`;
+
+      // Update the stored Y percentage
+      pointYPercent = (mouseY / rect.height) * 100;
+    }
+
+    var reversedValue = 100 - pointYPercent;
+    localStorage.setItem(
+      "current_value",
+      JSON.stringify({ value: reversedValue }),
+    );
+
+    socket.emit("mouse_create_point", {
+      "y%": pointYPercent,
+      src: point ? "point_existed" : "point_not_existed",
+    });
+  };
+
   const createPointAtMouseClick = (event) => {
     const rect = box.getBoundingClientRect();
     const mouseY = event.clientY - rect.top; // Get mouse Y position relative to the box
@@ -171,7 +208,47 @@ function getValueLocal() {
       );
     });
   };
-  
+
+  const movePointToValue = (y_value) => {
+    const mouseY = y_value * $(box).height();
+    let box_height = $(box).height()
+    let box_width = $(box).width()
+    let y_percent = y_value * 100;
+    console.log(y_percent)
+    console.log(mouseY)
+    if (!point) {
+      // If point doesn't exist, create it at the calculated position
+      point = document.createElement("div");
+      point.classList.add("point");
+      point.style.left = `${box_width / 2 - 10}px`; // Center horizontally
+      point.style.top = `${mouseY - 10}px`; // Position at mouse Y
+      box.appendChild(point);
+
+      // Make the point draggable immediately after creation
+      makePointDraggable(point);
+
+      // Store the Y percentage relative to the box height
+      pointYPercent = (mouseY / rect.box_height) * 100;
+    } else {
+      // If point exists, move it to the new Y position
+      console.log('movePointToMouseClickValue')
+      point.style.top = `${mouseY - 10}px`;
+      pointYPercent = (mouseY / box_height) * 100;
+    }
+
+    var reversedValue = 100 - pointYPercent;
+    localStorage.setItem(
+      "current_value",
+      JSON.stringify({ value: reversedValue }),
+    );
+
+    // Emit point creation
+    socket.emit("mouse_create_point", {
+      "y%": reversedValue,
+      src: point ? "point_existed" : "point_not_existed",
+    });
+  };
+
   const movePointToMouseClick = (event) => {
     const rect = box.getBoundingClientRect();
     const mouseY = event.clientY - rect.top;
@@ -353,3 +430,62 @@ function getValueLocal() {
       }
     }
   }
+
+let reconnectInterval = 2000; // 2 seconds
+let isManuallyClosed = false; // To track if the user manually closed the connection
+let reconnect_attempts = 1;
+let hasReconnected = false;
+function connectWebSocket() {
+    socket = io();
+
+    socket.on("connect", () => {
+        if(hasReconnected) {
+        console.log("WebSocket reconnected");
+        socket.emit("system", {"reconnected": true})
+        } else {
+            console.log("WebSocket connected");
+        }
+
+    });
+
+    socket.on("disconnect", () => {
+        console.log("WebSocket disconnected, attempting to reconnect...");
+        if (!isManuallyClosed) {
+            console.log("reconnecting for the ("+reconnect_attempts+") in "+ reconnectInterval + "ms...")
+            setTimeout(connectWebSocket, reconnectInterval);
+            hasReconnected= true
+            reconnect_attempts++;
+        }
+    });
+
+    socket.on("connect_error", (error) => {
+        // console.error("WebSocket connection error:", error);
+        if (!isManuallyClosed) {
+            setTimeout(connectWebSocket, reconnectInterval);
+        }
+    });
+
+    // Your existing event listeners
+    socket.on("mouse_move_point", (data) => {
+        let inverted = 1 - data.value;
+        console.log("value: " + inverted);
+        if (inverted < 1) {
+            if (!point) {
+                createPointAtValue(inverted);
+            } else {
+                movePointToValue(inverted);
+            }
+        } else {
+            if (point) {
+                point.remove();
+                point = null;
+                localStorage.setItem("current_value", JSON.stringify({ value: 0 }));
+
+                socket.emit("mouse_create_point", {
+                    "y%": 0,
+                    src: "point_deleted",
+                });
+            }
+        }
+    });
+}
